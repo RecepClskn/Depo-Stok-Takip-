@@ -1,0 +1,243 @@
+#include <iostream>
+#include <conio.h>
+#include <fstream>
+#include <cstring>
+#include <stdio.h>
+#include <stdlib.h>
+#include <iomanip>
+
+using namespace std;
+
+struct Urun
+{
+    char ad[100];
+    char sayi[100];
+    char tur[100];
+};
+
+Urun urun;
+
+
+
+void UrunEkle()
+{
+    ofstream yaz("veriler.dat", ios::binary | ios::app);
+    Urun urun;
+
+    char secim;
+    do
+    {
+        cout << "Urun ismini giriniz: ";
+        cin >> urun.ad;
+
+        cout << "Urun sayisini giriniz: ";
+        cin >> urun.sayi;
+
+        cout << "Urun turunu giriniz (Adet veya Kilo seklinde): ";
+        cin >> urun.tur;
+
+        yaz.write((char*)&urun, sizeof(urun));
+
+        cout << "Başka bir ürün eklemek ister misiniz? (E/e: Evet, H/h: Hayır): ";
+        secim = getche();
+        cout << endl;
+    } while (secim == 'e' || secim == 'E');
+
+    yaz.close();
+}
+
+
+
+void UrunListeleme()
+{
+	ifstream oku("veriler.dat", ios::binary | ios::app);
+	
+	oku.seekg(0,ios::end);
+	
+	int kayitsayisi=oku.tellg()/sizeof(Urun);
+	
+	if(kayitsayisi>0)
+	{
+		for(int i=0;i<kayitsayisi;i++)
+		{
+			oku.seekg(i*sizeof(urun));
+			oku.read((char*)&urun ,sizeof(urun));
+			cout<<i+1<<".Urunun Sistemdeki Bilgileri"<<endl;
+			cout<<"Urun Adi:"<<urun.ad<<endl;
+			cout<<"Urun Sayisi:"<<urun.sayi<<endl;
+			cout<<"Urun Turu:"<<urun.tur<<endl;
+		}
+		cout<<kayitsayisi<<" Adet Urun Sisteme Eklendi"<<endl;
+		oku.close();
+	}
+	else
+	cout<<"Urun Bulunamadi"<<endl;
+	oku.close();
+}
+
+
+
+void UrunArama()
+{
+	ifstream oku("veriler.dat", ios::binary | ios::app);
+	
+	oku.seekg(0,ios::end);
+	
+	int kayitsayisi=oku.tellg()/sizeof(Urun);
+	
+	char ad[100];
+	cout<<" İstenen Urunu Giriniz" <<endl;
+	cin>>ad;
+	if(kayitsayisi>0)
+	{
+		for(int i=0;i<kayitsayisi;i++)
+		{
+			oku.seekg(i*sizeof(urun));
+			oku.read((char*)&urun ,sizeof(urun));
+			
+			if(strcmp(urun.ad,ad)==0)
+			{
+			cout<<"Bulunan Urunun Sistemdeki Bilgileri"<<endl;
+			cout<<"Urun Adi:"<<urun.ad<<endl;
+			cout<<"Urun Sayisi:"<<urun.sayi<<endl;
+			cout<<"Urun Turu:"<<urun.tur<<endl;
+		}
+		
+		}
+
+	}
+	oku.close();
+}
+void UrunSilme()
+{
+	ifstream oku("veriler.dat", ios::binary | ios::app);
+	
+	oku.seekg(0,ios::end);
+	
+	int kayitsayisi=oku.tellg()/sizeof(Urun);
+	
+	char secim;
+	bool var=false;
+	char ad[100];
+	cout<<" Silmek İstediginiz Urunu Giriniz" <<endl;
+	cin>>ad;
+	if(kayitsayisi>0)
+	{
+		for(int i=0;i<kayitsayisi;i++)
+		{
+			oku.seekg(i*sizeof(urun));
+			oku.read((char*)&urun ,sizeof(urun));
+			
+			if(strcmp(urun.ad,ad)==0)
+			{
+			cout<<"Silinecek Urunun Sistemdeki Bilgileri"<<endl;
+			cout<<"Urun Adi:"<<urun.ad<<endl;
+			cout<<"Urun Sayisi:"<<urun.sayi<<endl;
+			cout<<"Urun Turu:"<<urun.tur<<endl;
+			
+			cout<<"Silmek Istediginiz Urun Bu Mu? (Evet ise E/e Hayır ise H/h)"<<endl;
+			
+			secim=getche();
+			if(secim=='h' || secim=='H')
+			{
+				Urun yedek_urun;
+			ofstream yedek_yaz("Yedek_Veriler.dat",ios::binary|ios::app);
+			strcpy(yedek_urun.ad,urun.ad);
+			strcpy(yedek_urun.sayi,urun.sayi);
+			strcpy(yedek_urun.tur,urun.tur);
+			
+			yedek_yaz.write((char*)&urun,sizeof(urun));
+			yedek_yaz.close();
+			}
+			else if (secim=='e' || secim=='E')
+			{
+				var=true;
+			}
+			
+		}
+		else
+		{
+			Urun yedek_urun;
+			ofstream yedek_yaz("Yedek_Veriler.dat",ios::binary|ios::app);
+			strcpy(yedek_urun.ad,urun.ad);
+			strcpy(yedek_urun.sayi,urun.sayi);
+			strcpy(yedek_urun.tur,urun.tur);
+			
+			yedek_yaz.write((char*)&yedek_urun,sizeof(yedek_urun));
+			yedek_yaz.close();
+		}
+		}
+		oku.close();
+		if(var)
+		{
+			remove("veriler.dat");
+			rename("Yedek_Veriler.dat","veriler.dat");
+			cout<<endl;
+			cout<<"Urun Kaydi Silindi"<<endl;
+			
+		}
+		else
+		{
+			remove("Yedek_Veriler.dat");
+			
+			cout<<"Urun Kaydi Bulunamadi"<<endl;
+		}
+
+	}
+	else
+	cout<<"Urun Bulunamadi"<<endl;
+	oku.close();
+}
+int main()
+{
+    setlocale(LC_ALL, "Turkish");
+    char menu;
+
+    do
+    {
+        system("cls");
+        cout << "Sisteme Giriş Yapıldı" << endl;
+        cout << "|----HOŞGELDİNİZ----|" << endl;
+        cout << "|   1.Ürün Ekleme   |" << endl;
+        cout << "|   2.Ürün Silme    |" << endl;
+        cout << "|  3.Ürün Listeleme |" << endl;
+        cout << "|   4.Ürün Arama    |" << endl;
+        cout << "Yapmak istediğiniz işlem için işleme ait rakamı giriniz:";
+
+        
+        
+        char secim;
+        cin>>secim;
+
+        switch (secim)
+        {
+        case '1':
+        {
+            UrunEkle();
+            break;
+        }
+        case '2':
+        {
+            UrunSilme();
+            break;
+        }
+        case '3':
+        {
+            UrunListeleme();
+            break;
+        }
+        case '4':
+        {
+        	UrunArama();
+            break;
+        }
+        }
+
+        cout << endl;
+        cout << "Başka bir işlem yapmak istiyor musunuz? (Lütfen devam etmek için E/e'ye, bitirmek için H/h'ye basınız): ";
+        menu = getche();
+        cout << endl;
+    } while (menu == 'e' || menu == 'E');
+
+    return 0;
+}
